@@ -1,4 +1,4 @@
-if getgenv().MeGui then
+if getgenv().MeGui and getgenv().MeGui.Version == 2 then
 	return getgenv().MeGui
 end
 
@@ -6,19 +6,22 @@ local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local TS = game:GetService("TweenService")
 
-local MeGui = {}
+local MeGui = { Version = 2 }
 getgenv().MeGui = MeGui
 
 local parentGui = (gethui and gethui()) or Players.LocalPlayer:WaitForChild("PlayerGui")
 
+-- ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MeGui"
 screenGui.SafeAreaCompatibility = Enum.SafeAreaCompatibility.None
 screenGui.IgnoreGuiInset = true
 screenGui.ScreenInsets = Enum.ScreenInsets.None
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.ResetOnSpawn = false
 screenGui.Parent = parentGui
 
+-- Main
 local main = Instance.new("Frame")
 main.Name = "Main"
 main.Size = UDim2.new(1, 0, 1, 0)
@@ -26,14 +29,16 @@ main.BackgroundTransparency = 1
 main.BorderSizePixel = 0
 main.Parent = screenGui
 
+-- UI (Window)
 local ui = Instance.new("Frame")
 ui.Name = "UI"
 ui.Size = UDim2.new(0, 500, 0, 250)
-ui.Position = UDim2.new(0.5, -250, 0.5, -125)
+ui.Position = UDim2.new(0.29078, 0, 0.29968, 0) -- Exact studio position
 ui.BackgroundColor3 = Color3.fromRGB(28, 32, 36)
 ui.BorderSizePixel = 0
 ui.Parent = main
 
+-- UIStroke
 local stroke = Instance.new("UIStroke")
 stroke.Transparency = 0.85
 stroke.Thickness = 2
@@ -41,16 +46,18 @@ stroke.Color = Color3.fromRGB(201, 201, 201)
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 stroke.Parent = ui
 
+-- Topbar
 local topbar = Instance.new("Frame")
 topbar.Name = "Topbar"
-topbar.Size = UDim2.new(1, 0, 0, 25)
+topbar.Size = UDim2.new(1, 0, 0.101, 0)
 topbar.BackgroundColor3 = Color3.fromRGB(42, 75, 124)
 topbar.BorderSizePixel = 0
 topbar.Parent = ui
 
+-- Toggle
 local toggleBtn = Instance.new("ImageButton")
 toggleBtn.Name = "Toggle"
-toggleBtn.Size = UDim2.new(0.044, 0, 0.87, 0)
+toggleBtn.Size = UDim2.new(0.044, 0, 0.87129, 0)
 toggleBtn.Position = UDim2.new(0.01, 0, 0.04, 0)
 toggleBtn.BackgroundTransparency = 1
 toggleBtn.ImageColor3 = Color3.fromRGB(226, 226, 226)
@@ -58,12 +65,13 @@ toggleBtn.Image = "rbxassetid://123662973791783"
 toggleBtn.Rotation = 180
 toggleBtn.Parent = topbar
 
+-- Title
 local titleLbl = Instance.new("TextLabel")
 titleLbl.Name = "Title"
-titleLbl.Size = UDim2.new(0.86, 0, 0.79, 0)
+titleLbl.Size = UDim2.new(0.86, 0, 0.79208, 0)
 titleLbl.Position = UDim2.new(0.064, 0, 0.04, 0)
 titleLbl.BackgroundTransparency = 1
-titleLbl.Text = "MeGui"
+titleLbl.Text = "This is the title"
 titleLbl.TextColor3 = Color3.fromRGB(226, 226, 226)
 titleLbl.TextSize = 14
 titleLbl.TextScaled = true
@@ -71,15 +79,17 @@ titleLbl.TextXAlignment = Enum.TextXAlignment.Left
 titleLbl.FontFace = Font.new("rbxasset://fonts/families/Sarpanch.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 titleLbl.Parent = topbar
 
+-- Close
 local closeBtn = Instance.new("ImageButton")
 closeBtn.Name = "Close"
-closeBtn.Size = UDim2.new(0.044, 0, 0.87, 0)
+closeBtn.Size = UDim2.new(0.044, 0, 0.871, 0)
 closeBtn.Position = UDim2.new(0.945, 0, 0.04, 0)
 closeBtn.BackgroundTransparency = 1
 closeBtn.ImageColor3 = Color3.fromRGB(226, 226, 226)
 closeBtn.Image = "rbxassetid://75787753688095"
 closeBtn.Parent = topbar
 
+-- Tabs
 local tabs = Instance.new("ScrollingFrame")
 tabs.Name = "Tabs"
 tabs.Size = UDim2.new(0.98, 0, 0.08, 0)
@@ -98,6 +108,7 @@ tabsLayout.Padding = UDim.new(0, 5)
 tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 tabsLayout.Parent = tabs
 
+-- Frames
 local frames = Instance.new("Frame")
 frames.Name = "Frames"
 frames.Size = UDim2.new(1, 0, 0.76, 0)
@@ -106,11 +117,13 @@ frames.BackgroundTransparency = 1
 frames.BorderSizePixel = 0
 frames.Parent = ui
 
+-- Objects (Page 1)
 local objects = Instance.new("Frame")
 objects.Name = "Objects"
 objects.Size = UDim2.new(1, 0, 1, 0)
 objects.BackgroundTransparency = 1
 objects.BorderSizePixel = 0
+objects.Visible = false
 objects.Parent = frames
 
 local objectsLayout = Instance.new("UIListLayout")
@@ -119,6 +132,7 @@ objectsLayout.Padding = UDim.new(0, 20)
 objectsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 objectsLayout.Parent = objects
 
+-- Notifications Container
 local notifHolder = Instance.new("Frame")
 notifHolder.Name = "Notifications"
 notifHolder.AnchorPoint = Vector2.new(1, 1)
@@ -133,34 +147,53 @@ notifLayout.Padding = UDim.new(0, 6)
 notifLayout.SortOrder = Enum.SortOrder.LayoutOrder
 notifLayout.Parent = notifHolder
 
+-- Tooltip
+local tooltip = Instance.new("TextLabel")
+tooltip.Name = "Tooltip"
+tooltip.BackgroundColor3 = Color3.fromRGB(34, 67, 100)
+tooltip.TextColor3 = Color3.fromRGB(255, 255, 255)
+tooltip.Font = Enum.Font.Gotham
+tooltip.TextSize = 12
+tooltip.Visible = false
+tooltip.ZIndex = 100
+tooltip.AutomaticSize = Enum.AutomaticSize.X
+tooltip.Size = UDim2.new(0, 0, 0, 20)
+tooltip.Parent = screenGui
+
+local tipCorner = Instance.new("UICorner")
+tipCorner.CornerRadius = UDim.new(0.2, 0)
+tipCorner.Parent = tooltip
+
+local tipPad = Instance.new("UIPadding")
+tipPad.PaddingLeft = UDim.new(0, 6)
+tipPad.PaddingRight = UDim.new(0, 6)
+tipPad.Parent = tooltip
+
+local function addTip(obj, text)
+	obj.MouseEnter:Connect(function()
+		if text and text ~= "" then
+			tooltip.Text = text
+			tooltip.Visible = true
+		end
+	end)
+	obj.MouseLeave:Connect(function()
+		tooltip.Visible = false
+	end)
+	UIS.InputChanged:Connect(function(input)
+		if tooltip.Visible and input.UserInputType == Enum.UserInputType.MouseMovement then
+			tooltip.Position = UDim2.new(0, input.Position.X + 15, 0, input.Position.Y + 15)
+		end
+	end)
+end
+
+-- Tab Logic
 local activeColor = Color3.fromRGB(34, 67, 100)
 local idleColor = Color3.fromRGB(14, 47, 80)
-
-local function selectTab(tab)
-	for _, other in ipairs(tabs:GetChildren()) do
-		if other:IsA("Frame") then
-			other.BackgroundColor3 = idleColor
-		end
-	end
-	tab.BackgroundColor3 = activeColor
-
-	for _, frame in ipairs(frames:GetChildren()) do
-		if frame:IsA("Frame") then
-			frame.Visible = false
-		end
-	end
-
-	local targetName = (tab.Name == "TabExample") and "TabExample" or "Objects"
-	local target = frames:FindFirstChild(targetName)
-	if target then
-		target.Visible = true
-	end
-end
 
 local function makeTab(name)
 	local tab = Instance.new("Frame")
 	tab.Name = name
-	tab.Size = UDim2.new(0.112, 0, 0, 20)
+	tab.Size = UDim2.new(0.11224, 0, 0, 20)
 	tab.BackgroundColor3 = idleColor
 	tab.BorderSizePixel = 0
 	tab.Parent = tabs
@@ -178,37 +211,45 @@ local function makeTab(name)
 	local constraint = Instance.new("UITextSizeConstraint")
 	constraint.MaxTextSize = 15
 	constraint.Parent = lbl
+	
+	local targetPage = Instance.new("Frame")
+	targetPage.Name = name
+	targetPage.Size = UDim2.new(1, 0, 1, 0)
+	targetPage.BackgroundTransparency = 1
+	targetPage.BorderSizePixel = 0
+	targetPage.Visible = false
+	targetPage.Parent = frames
+	
+	local pageLayout = Instance.new("UIListLayout")
+	pageLayout.Wraps = true
+	pageLayout.Padding = UDim.new(0, 20)
+	pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	pageLayout.Parent = targetPage
 
 	tab.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			selectTab(tab)
+			for _, t in ipairs(tabs:GetChildren()) do
+				if t:IsA("Frame") then t.BackgroundColor3 = idleColor end
+			end
+			for _, p in ipairs(frames:GetChildren()) do
+				if p:IsA("Frame") then p.Visible = false end
+			end
+			tab.BackgroundColor3 = activeColor
+			targetPage.Visible = true
 		end
 	end)
+	
+	return targetPage
 end
 
-local function makePage(name)
-	local page = Instance.new("Frame")
-	page.Name = name
-	page.Size = UDim2.new(1, 0, 1, 0)
-	page.BackgroundTransparency = 1
-	page.BorderSizePixel = 0
-	page.Visible = false
-	page.Parent = frames
+local page1 = makeTab("Active")
+local page2 = makeTab("Normal")
 
-	local layout = Instance.new("UIListLayout")
-	layout.Wraps = true
-	layout.Padding = UDim.new(0, 20)
-	layout.SortOrder = Enum.SortOrder.LayoutOrder
-	layout.Parent = page
-	return page
-end
+-- Select first tab by default
+tabs:GetChildren()[1].BackgroundColor3 = activeColor
+page1.Visible = true
 
-makeTab("ActiveTabExample")
-makeTab("TabExample")
-makePage("TabExample")
-
-selectTab(tabs:GetFirstChild())
-
+-- Animations (Toggle/Close)
 local tsInfo = TweenInfo.new(0.2, Enum.EasingStyle.Linear)
 local expanded = true
 
@@ -235,65 +276,12 @@ closeBtn.MouseButton1Click:Connect(function()
 	main.Visible = false
 end)
 
+-- Drag & Dock
 local dragging = false
 local offset
 local docked = nil
 local savedSize, savedPos
 local snapDist = 20
-local dockX = 0.08
-local dockY = 0.04
-
-local preview = Instance.new("Frame")
-preview.Name = "DockPreview"
-preview.BackgroundColor3 = Color3.new(1, 1, 1)
-preview.BackgroundTransparency = 0.75
-preview.BorderSizePixel = 0
-preview.Visible = false
-preview.ZIndex = 10
-preview.Parent = screenGui
-
-local function showPreview(input)
-	local s = workspace.CurrentCamera.ViewportSize
-	local mx, my = input.Position.X, input.Position.Y
-	local mode = nil
-	if mx < s.X * dockX then
-		mode = "left"
-	elseif mx > s.X * (1 - dockX) then
-		mode = "right"
-	elseif my < s.Y * dockY then
-		mode = "top"
-	end
-	if mode == "left" then
-		preview.Position = UDim2.new(0, 0, 0, 0)
-		preview.Size = UDim2.new(0.5, 0, 1, 0)
-		preview.Visible = true
-	elseif mode == "right" then
-		preview.Position = UDim2.new(0.5, 0, 0, 0)
-		preview.Size = UDim2.new(0.5, 0, 1, 0)
-		preview.Visible = true
-	elseif mode == "top" then
-		preview.Position = UDim2.new(0, 0, 0, 0)
-		preview.Size = UDim2.new(1, 0, 1, 0)
-		preview.Visible = true
-	else
-		preview.Visible = false
-	end
-	return mode
-end
-
-local function applyDock(mode)
-	if mode == "left" then
-		ui.Position = UDim2.new(0, 0, 0, 0)
-		ui.Size = UDim2.new(0.5, 0, 1, 0)
-	elseif mode == "right" then
-		ui.Position = UDim2.new(0.5, 0, 0, 0)
-		ui.Size = UDim2.new(0.5, 0, 1, 0)
-	elseif mode == "top" then
-		ui.Position = UDim2.new(0, 0, 0, 0)
-		ui.Size = UDim2.new(1, 0, 1, 0)
-	end
-	docked = mode
-end
 
 topbar.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -305,9 +293,7 @@ topbar.InputBegan:Connect(function(input)
 		if docked then
 			if savedSize then ui.Size = savedSize end
 			if savedPos then ui.Position = savedPos end
-			savedSize = nil
-			savedPos = nil
-			docked = nil
+			savedSize, savedPos, docked = nil, nil, nil
 		end
 		dragging = true
 		offset = Vector2.new(input.Position.X - ui.AbsolutePosition.X, input.Position.Y - ui.AbsolutePosition.Y)
@@ -317,32 +303,22 @@ end)
 UIS.InputChanged:Connect(function(input)
 	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
 		ui.Position = UDim2.new(0, input.Position.X - offset.X, 0, input.Position.Y - offset.Y)
-		showPreview(input)
 	end
 end)
 
 UIS.InputEnded:Connect(function(input)
 	if dragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
 		dragging = false
-		preview.Visible = false
-		local mode = showPreview(input)
-		if mode then
-			if not savedSize then
-				savedSize = ui.Size
-				savedPos = UDim2.new(0, ui.AbsolutePosition.X, 0, ui.AbsolutePosition.Y)
-			end
-			applyDock(mode)
-		else
-			local s = workspace.CurrentCamera.ViewportSize
-			local size = ui.AbsoluteSize
-			local x, y = ui.Position.X.Offset, ui.Position.Y.Offset
-			if x < snapDist then x = 0 elseif x + size.X > s.X - snapDist then x = s.X - size.X end
-			if y < snapDist then y = 0 elseif y + size.Y > s.Y - snapDist then y = s.Y - size.Y end
-			ui.Position = UDim2.new(0, x, 0, y)
-		end
+		local s = workspace.CurrentCamera.ViewportSize
+		local size = ui.AbsoluteSize
+		local x, y = ui.Position.X.Offset, ui.Position.Y.Offset
+		if x < snapDist then x = 0 elseif x + size.X > s.X - snapDist then x = s.X - size.X end
+		if y < snapDist then y = 0 elseif y + size.Y > s.Y - snapDist then y = s.Y - size.Y end
+		ui.Position = UDim2.new(0, x, 0, y)
 	end
 end)
 
+-- Resize Grip
 local grip = Instance.new("TextButton")
 grip.Name = "ResizeGrip"
 grip.Size = UDim2.new(0, 12, 0, 12)
@@ -383,6 +359,7 @@ UIS.InputEnded:Connect(function(input)
 	end
 end)
 
+-- Notify API
 function MeGui.Notify(text, duration)
 	local d = duration or 3
 	local toast = Instance.new("TextLabel")
@@ -400,7 +377,6 @@ function MeGui.Notify(text, duration)
 
 	local pad = Instance.new("UIPadding")
 	pad.PaddingLeft = UDim.new(0, 10)
-	pad.PaddingRight = UDim.new(0, 10)
 	pad.Parent = toast
 
 	local corner = Instance.new("UICorner")
@@ -408,7 +384,6 @@ function MeGui.Notify(text, duration)
 	corner.Parent = toast
 
 	TS:Create(toast, TweenInfo.new(0.2), {TextTransparency = 0, BackgroundTransparency = 0}):Play()
-
 	task.delay(d, function()
 		TS:Create(toast, TweenInfo.new(0.3), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
 		task.wait(0.3)
@@ -416,9 +391,10 @@ function MeGui.Notify(text, duration)
 	end)
 end
 
+-- Widget APIs (Replicated 1:1 from your Gui2Lua)
 function MeGui:CreateButton(props)
 	props = props or {}
-	local parent = props.Parent or objects
+	local parent = props.Parent or page1
 
 	local btn = Instance.new("TextButton")
 	btn.TextWrapped = true
@@ -445,12 +421,13 @@ function MeGui:CreateButton(props)
 	btn.MouseEnter:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(54, 87, 120) end)
 	btn.MouseLeave:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(34, 67, 100) end)
 	btn.MouseButton1Click:Connect(function() if props.Callback then props.Callback() end end)
+	if props.Tooltip then addTip(btn, props.Tooltip) end
 	return btn
 end
 
 function MeGui:CreateCheckbox(props)
 	props = props or {}
-	local parent = props.Parent or objects
+	local parent = props.Parent or page1
 
 	local box = Instance.new("TextButton")
 	box.TextWrapped = true
@@ -495,12 +472,13 @@ function MeGui:CreateCheckbox(props)
 		icon.Image = checked and "rbxassetid://117985790478363" or ""
 		if props.Callback then props.Callback(checked) end
 	end)
+	if props.Tooltip then addTip(box, props.Tooltip) end
 	return box
 end
 
 function MeGui:CreateSlider(props)
 	props = props or {}
-	local parent = props.Parent or objects
+	local parent = props.Parent or page1
 
 	local bar = Instance.new("Frame")
 	bar.BorderSizePixel = 0
@@ -558,13 +536,14 @@ function MeGui:CreateSlider(props)
 	UIS.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then drag = false end
 	end)
-
+	
+	if props.Tooltip then addTip(bar, props.Tooltip) end
 	return bar
 end
 
 function MeGui:CreateTextbox(props)
 	props = props or {}
-	local parent = props.Parent or objects
+	local parent = props.Parent or page1
 
 	local box = Instance.new("TextBox")
 	box.BorderSizePixel = 0
@@ -593,6 +572,7 @@ function MeGui:CreateTextbox(props)
 		if props.Callback then props.Callback(box.Text) end
 	end)
 
+	if props.Tooltip then addTip(box, props.Tooltip) end
 	return box
 end
 
