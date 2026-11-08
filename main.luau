@@ -775,7 +775,9 @@ local script = G2L["23"];
 			end
 		end
 	
-		local target = frames:FindFirstChild(tab.Name)
+		local targetName = (tab.Name == "TabExample") and "TabExample" or "Objects"
+		local target = frames:FindFirstChild(targetName)
+	
 		if target then
 			target.Visible = true
 		end
@@ -790,14 +792,17 @@ local script = G2L["23"];
 			end)
 		end
 	end
+	
+	local firstTab = tabs:FindFirstChild("ActiveTabExample")
+	if firstTab then
+		select(firstTab)
+	end
 end;
 task.spawn(C_23);
 -- StarterGui.MeGui.Main.ObjectsHandler
 local function C_24()
 local script = G2L["24"];
 	local objects = script.Parent.UI.Frames.Objects
-	objects.Visible = true
-	
 	local iconId = "rbxassetid://117985790478363"
 	
 	local function setupCheckbox(box)
