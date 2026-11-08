@@ -117,21 +117,6 @@ frames.BackgroundTransparency = 1
 frames.BorderSizePixel = 0
 frames.Parent = ui
 
--- Objects (Page 1)
-local objects = Instance.new("Frame")
-objects.Name = "Objects"
-objects.Size = UDim2.new(1, 0, 1, 0)
-objects.BackgroundTransparency = 1
-objects.BorderSizePixel = 0
-objects.Visible = false
-objects.Parent = frames
-
-local objectsLayout = Instance.new("UIListLayout")
-objectsLayout.Wraps = true
-objectsLayout.Padding = UDim.new(0, 20)
-objectsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-objectsLayout.Parent = objects
-
 -- Notifications Container
 local notifHolder = Instance.new("Frame")
 notifHolder.Name = "Notifications"
@@ -189,6 +174,7 @@ end
 -- Tab Logic
 local activeColor = Color3.fromRGB(34, 67, 100)
 local idleColor = Color3.fromRGB(14, 47, 80)
+local firstTab
 
 local function makeTab(name)
 	local tab = Instance.new("Frame")
@@ -239,6 +225,10 @@ local function makeTab(name)
 		end
 	end)
 	
+	if not firstTab then
+		firstTab = tab
+	end
+	
 	return targetPage
 end
 
@@ -246,8 +236,10 @@ local page1 = makeTab("Active")
 local page2 = makeTab("Normal")
 
 -- Select first tab by default
-tabs:GetChildren()[1].BackgroundColor3 = activeColor
-page1.Visible = true
+if firstTab then
+	firstTab.BackgroundColor3 = activeColor
+	page1.Visible = true
+end
 
 -- Animations (Toggle/Close)
 local tsInfo = TweenInfo.new(0.2, Enum.EasingStyle.Linear)
