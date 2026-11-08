@@ -1,5 +1,5 @@
-if getgenv().MeGuiLibrary then
-	return getgenv().MeGuiLibrary
+if getgenv().MeGui then
+	return getgenv().MeGui
 end
 
 local Players = game:GetService("Players")
@@ -7,726 +7,593 @@ local UIS = game:GetService("UserInputService")
 local TS = game:GetService("TweenService")
 
 local MeGui = {}
-getgenv().MeGuiLibrary = MeGui
+getgenv().MeGui = MeGui
 
-local theme = {
-	bg = Color3.fromRGB(28, 32, 36),
-	top = Color3.fromRGB(42, 75, 124),
-	tab_on = Color3.fromRGB(34, 67, 100),
-	tab_off = Color3.fromRGB(14, 47, 80),
-	el = Color3.fromRGB(34, 67, 100),
-	el_hover = Color3.fromRGB(54, 87, 120),
-	txt = Color3.fromRGB(255, 255, 255),
-	font = Enum.Font.Gotham
-}
+local parentGui = (gethui and gethui()) or Players.LocalPlayer:WaitForChild("PlayerGui")
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "MeGui"
-gui.IgnoreGuiInset = true
-gui.ResetOnSpawn = false
-gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui.Parent = (gethui and gethui()) or Players.LocalPlayer:WaitForChild("PlayerGui")
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MeGui"
+screenGui.SafeAreaCompatibility = Enum.SafeAreaCompatibility.None
+screenGui.IgnoreGuiInset = true
+screenGui.ScreenInsets = Enum.ScreenInsets.None
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = parentGui
 
-local notif_holder = Instance.new("Frame")
-notif_holder.Name = "Notifications"
-notif_holder.AnchorPoint = Vector2.new(1, 1)
-notif_holder.Position = UDim2.new(1, -20, 1, -20)
-notif_holder.Size = UDim2.new(0, 260, 1, -40)
-notif_holder.BackgroundTransparency = 1
-notif_holder.Parent = gui
+local main = Instance.new("Frame")
+main.Name = "Main"
+main.Size = UDim2.new(1, 0, 1, 0)
+main.BackgroundTransparency = 1
+main.BorderSizePixel = 0
+main.Parent = screenGui
 
-local notif_layout = Instance.new("UIListLayout")
-notif_layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-notif_layout.Padding = UDim.new(0, 8)
-notif_layout.SortOrder = Enum.SortOrder.LayoutOrder
-notif_layout.Parent = notif_holder
+local ui = Instance.new("Frame")
+ui.Name = "UI"
+ui.Size = UDim2.new(0, 500, 0, 250)
+ui.Position = UDim2.new(0.5, -250, 0.5, -125)
+ui.BackgroundColor3 = Color3.fromRGB(28, 32, 36)
+ui.BorderSizePixel = 0
+ui.Parent = main
+
+local stroke = Instance.new("UIStroke")
+stroke.Transparency = 0.85
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(201, 201, 201)
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Parent = ui
+
+local topbar = Instance.new("Frame")
+topbar.Name = "Topbar"
+topbar.Size = UDim2.new(1, 0, 0, 25)
+topbar.BackgroundColor3 = Color3.fromRGB(42, 75, 124)
+topbar.BorderSizePixel = 0
+topbar.Parent = ui
+
+local toggleBtn = Instance.new("ImageButton")
+toggleBtn.Name = "Toggle"
+toggleBtn.Size = UDim2.new(0.044, 0, 0.87, 0)
+toggleBtn.Position = UDim2.new(0.01, 0, 0.04, 0)
+toggleBtn.BackgroundTransparency = 1
+toggleBtn.ImageColor3 = Color3.fromRGB(226, 226, 226)
+toggleBtn.Image = "rbxassetid://123662973791783"
+toggleBtn.Rotation = 180
+toggleBtn.Parent = topbar
+
+local titleLbl = Instance.new("TextLabel")
+titleLbl.Name = "Title"
+titleLbl.Size = UDim2.new(0.86, 0, 0.79, 0)
+titleLbl.Position = UDim2.new(0.064, 0, 0.04, 0)
+titleLbl.BackgroundTransparency = 1
+titleLbl.Text = "MeGui"
+titleLbl.TextColor3 = Color3.fromRGB(226, 226, 226)
+titleLbl.TextSize = 14
+titleLbl.TextScaled = true
+titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+titleLbl.FontFace = Font.new("rbxasset://fonts/families/Sarpanch.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+titleLbl.Parent = topbar
+
+local closeBtn = Instance.new("ImageButton")
+closeBtn.Name = "Close"
+closeBtn.Size = UDim2.new(0.044, 0, 0.87, 0)
+closeBtn.Position = UDim2.new(0.945, 0, 0.04, 0)
+closeBtn.BackgroundTransparency = 1
+closeBtn.ImageColor3 = Color3.fromRGB(226, 226, 226)
+closeBtn.Image = "rbxassetid://75787753688095"
+closeBtn.Parent = topbar
+
+local tabs = Instance.new("ScrollingFrame")
+tabs.Name = "Tabs"
+tabs.Size = UDim2.new(0.98, 0, 0.08, 0)
+tabs.Position = UDim2.new(0.01, 0, 0.12, 0)
+tabs.BackgroundTransparency = 1
+tabs.BorderSizePixel = 0
+tabs.ScrollingDirection = Enum.ScrollingDirection.X
+tabs.AutomaticCanvasSize = Enum.AutomaticSize.X
+tabs.CanvasSize = UDim2.new(0, 0, 0, 0)
+tabs.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
+tabs.Parent = ui
+
+local tabsLayout = Instance.new("UIListLayout")
+tabsLayout.FillDirection = Enum.FillDirection.Horizontal
+tabsLayout.Padding = UDim.new(0, 5)
+tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+tabsLayout.Parent = tabs
+
+local frames = Instance.new("Frame")
+frames.Name = "Frames"
+frames.Size = UDim2.new(1, 0, 0.76, 0)
+frames.Position = UDim2.new(0, 0, 0.24, 0)
+frames.BackgroundTransparency = 1
+frames.BorderSizePixel = 0
+frames.Parent = ui
+
+local objects = Instance.new("Frame")
+objects.Name = "Objects"
+objects.Size = UDim2.new(1, 0, 1, 0)
+objects.BackgroundTransparency = 1
+objects.BorderSizePixel = 0
+objects.Parent = frames
+
+local objectsLayout = Instance.new("UIListLayout")
+objectsLayout.Wraps = true
+objectsLayout.Padding = UDim.new(0, 20)
+objectsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+objectsLayout.Parent = objects
+
+local notifHolder = Instance.new("Frame")
+notifHolder.Name = "Notifications"
+notifHolder.AnchorPoint = Vector2.new(1, 1)
+notifHolder.Position = UDim2.new(1, -20, 1, -20)
+notifHolder.Size = UDim2.new(0, 260, 1, -40)
+notifHolder.BackgroundTransparency = 1
+notifHolder.Parent = screenGui
+
+local notifLayout = Instance.new("UIListLayout")
+notifLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+notifLayout.Padding = UDim.new(0, 6)
+notifLayout.SortOrder = Enum.SortOrder.LayoutOrder
+notifLayout.Parent = notifHolder
+
+local activeColor = Color3.fromRGB(34, 67, 100)
+local idleColor = Color3.fromRGB(14, 47, 80)
+
+local function selectTab(tab)
+	for _, other in ipairs(tabs:GetChildren()) do
+		if other:IsA("Frame") then
+			other.BackgroundColor3 = idleColor
+		end
+	end
+	tab.BackgroundColor3 = activeColor
+
+	for _, frame in ipairs(frames:GetChildren()) do
+		if frame:IsA("Frame") then
+			frame.Visible = false
+		end
+	end
+
+	local targetName = (tab.Name == "TabExample") and "TabExample" or "Objects"
+	local target = frames:FindFirstChild(targetName)
+	if target then
+		target.Visible = true
+	end
+end
+
+local function makeTab(name)
+	local tab = Instance.new("Frame")
+	tab.Name = name
+	tab.Size = UDim2.new(0.112, 0, 0, 20)
+	tab.BackgroundColor3 = idleColor
+	tab.BorderSizePixel = 0
+	tab.Parent = tabs
+
+	local lbl = Instance.new("TextLabel")
+	lbl.Size = UDim2.new(1, 0, 1, 0)
+	lbl.BackgroundTransparency = 1
+	lbl.Text = name
+	lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+	lbl.TextSize = 15
+	lbl.TextScaled = true
+	lbl.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	lbl.Parent = tab
+
+	local constraint = Instance.new("UITextSizeConstraint")
+	constraint.MaxTextSize = 15
+	constraint.Parent = lbl
+
+	tab.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			selectTab(tab)
+		end
+	end)
+end
+
+local function makePage(name)
+	local page = Instance.new("Frame")
+	page.Name = name
+	page.Size = UDim2.new(1, 0, 1, 0)
+	page.BackgroundTransparency = 1
+	page.BorderSizePixel = 0
+	page.Visible = false
+	page.Parent = frames
+
+	local layout = Instance.new("UIListLayout")
+	layout.Wraps = true
+	layout.Padding = UDim.new(0, 20)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Parent = page
+	return page
+end
+
+makeTab("ActiveTabExample")
+makeTab("TabExample")
+makePage("TabExample")
+
+selectTab(tabs:GetFirstChild())
+
+local tsInfo = TweenInfo.new(0.2, Enum.EasingStyle.Linear)
+local expanded = true
+
+local function hover(btn)
+	btn.MouseEnter:Connect(function()
+		TS:Create(btn, tsInfo, {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		TS:Create(btn, tsInfo, {ImageColor3 = Color3.fromRGB(226, 226, 226)}):Play()
+	end)
+end
+hover(toggleBtn)
+hover(closeBtn)
+
+toggleBtn.MouseButton1Click:Connect(function()
+	expanded = not expanded
+	TS:Create(toggleBtn, tsInfo, {Rotation = expanded and 180 or 90}):Play()
+	TS:Create(ui, tsInfo, {Size = expanded and UDim2.new(0, 500, 0, 250) or UDim2.new(0, 500, 0, 25)}):Play()
+	tabs.Visible = expanded
+	frames.Visible = expanded
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+	main.Visible = false
+end)
+
+local dragging = false
+local offset
+local docked = nil
+local savedSize, savedPos
+local snapDist = 20
+local dockX = 0.08
+local dockY = 0.04
+
+local preview = Instance.new("Frame")
+preview.Name = "DockPreview"
+preview.BackgroundColor3 = Color3.new(1, 1, 1)
+preview.BackgroundTransparency = 0.75
+preview.BorderSizePixel = 0
+preview.Visible = false
+preview.ZIndex = 10
+preview.Parent = screenGui
+
+local function showPreview(input)
+	local s = workspace.CurrentCamera.ViewportSize
+	local mx, my = input.Position.X, input.Position.Y
+	local mode = nil
+	if mx < s.X * dockX then
+		mode = "left"
+	elseif mx > s.X * (1 - dockX) then
+		mode = "right"
+	elseif my < s.Y * dockY then
+		mode = "top"
+	end
+	if mode == "left" then
+		preview.Position = UDim2.new(0, 0, 0, 0)
+		preview.Size = UDim2.new(0.5, 0, 1, 0)
+		preview.Visible = true
+	elseif mode == "right" then
+		preview.Position = UDim2.new(0.5, 0, 0, 0)
+		preview.Size = UDim2.new(0.5, 0, 1, 0)
+		preview.Visible = true
+	elseif mode == "top" then
+		preview.Position = UDim2.new(0, 0, 0, 0)
+		preview.Size = UDim2.new(1, 0, 1, 0)
+		preview.Visible = true
+	else
+		preview.Visible = false
+	end
+	return mode
+end
+
+local function applyDock(mode)
+	if mode == "left" then
+		ui.Position = UDim2.new(0, 0, 0, 0)
+		ui.Size = UDim2.new(0.5, 0, 1, 0)
+	elseif mode == "right" then
+		ui.Position = UDim2.new(0.5, 0, 0, 0)
+		ui.Size = UDim2.new(0.5, 0, 1, 0)
+	elseif mode == "top" then
+		ui.Position = UDim2.new(0, 0, 0, 0)
+		ui.Size = UDim2.new(1, 0, 1, 0)
+	end
+	docked = mode
+end
+
+topbar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		local px, py = input.Position.X, input.Position.Y
+		local function inBounds(obj)
+			return obj and px >= obj.AbsolutePosition.X and px <= obj.AbsolutePosition.X + obj.AbsoluteSize.X and py >= obj.AbsolutePosition.Y and py <= obj.AbsolutePosition.Y + obj.AbsoluteSize.Y
+		end
+		if inBounds(toggleBtn) or inBounds(closeBtn) then return end
+		if docked then
+			if savedSize then ui.Size = savedSize end
+			if savedPos then ui.Position = savedPos end
+			savedSize = nil
+			savedPos = nil
+			docked = nil
+		end
+		dragging = true
+		offset = Vector2.new(input.Position.X - ui.AbsolutePosition.X, input.Position.Y - ui.AbsolutePosition.Y)
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		ui.Position = UDim2.new(0, input.Position.X - offset.X, 0, input.Position.Y - offset.Y)
+		showPreview(input)
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+		dragging = false
+		preview.Visible = false
+		local mode = showPreview(input)
+		if mode then
+			if not savedSize then
+				savedSize = ui.Size
+				savedPos = UDim2.new(0, ui.AbsolutePosition.X, 0, ui.AbsolutePosition.Y)
+			end
+			applyDock(mode)
+		else
+			local s = workspace.CurrentCamera.ViewportSize
+			local size = ui.AbsoluteSize
+			local x, y = ui.Position.X.Offset, ui.Position.Y.Offset
+			if x < snapDist then x = 0 elseif x + size.X > s.X - snapDist then x = s.X - size.X end
+			if y < snapDist then y = 0 elseif y + size.Y > s.Y - snapDist then y = s.Y - size.Y end
+			ui.Position = UDim2.new(0, x, 0, y)
+		end
+	end
+end)
+
+local grip = Instance.new("TextButton")
+grip.Name = "ResizeGrip"
+grip.Size = UDim2.new(0, 12, 0, 12)
+grip.Position = UDim2.new(1, -12, 1, -12)
+grip.BackgroundColor3 = Color3.fromRGB(54, 87, 120)
+grip.BorderSizePixel = 0
+grip.AutoButtonColor = false
+grip.Text = ""
+grip.ZIndex = 5
+grip.Parent = ui
+
+local gripCorner = Instance.new("UICorner")
+gripCorner.CornerRadius = UDim.new(1, 0)
+gripCorner.Parent = grip
+
+local resizing = false
+local startSize, startMouse
+
+grip.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		resizing = true
+		startSize = ui.AbsoluteSize
+		startMouse = Vector2.new(input.Position.X, input.Position.Y)
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local dx = input.Position.X - startMouse.X
+		local dy = input.Position.Y - startMouse.Y
+		ui.Size = UDim2.new(0, math.max(200, startSize.X + dx), 0, math.max(120, startSize.Y + dy))
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		resizing = false
+	end
+end)
 
 function MeGui.Notify(text, duration)
 	local d = duration or 3
-	local box = Instance.new("TextLabel")
-	box.Size = UDim2.new(1, 0, 0, 32)
-	box.BackgroundColor3 = theme.top
-	box.Text = text
-	box.TextColor3 = theme.txt
-	box.Font = theme.font
-	box.TextSize = 14
-	box.TextXAlignment = Enum.TextXAlignment.Left
-	box.TextTransparency = 1
-	box.BackgroundTransparency = 1
-	box.Parent = notif_holder
+	local toast = Instance.new("TextLabel")
+	toast.Size = UDim2.new(1, 0, 0, 36)
+	toast.BackgroundColor3 = Color3.fromRGB(34, 67, 100)
+	toast.BorderSizePixel = 0
+	toast.Text = text
+	toast.TextColor3 = Color3.fromRGB(255, 255, 255)
+	toast.TextSize = 14
+	toast.Font = Enum.Font.Gotham
+	toast.TextXAlignment = Enum.TextXAlignment.Left
+	toast.TextTransparency = 1
+	toast.BackgroundTransparency = 1
+	toast.Parent = notifHolder
 
 	local pad = Instance.new("UIPadding")
 	pad.PaddingLeft = UDim.new(0, 10)
-	pad.Parent = box
+	pad.PaddingRight = UDim.new(0, 10)
+	pad.Parent = toast
 
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, 4)
-	corner.Parent = box
+	corner.Parent = toast
 
-	TS:Create(box, TweenInfo.new(0.2), {TextTransparency = 0, BackgroundTransparency = 0}):Play()
+	TS:Create(toast, TweenInfo.new(0.2), {TextTransparency = 0, BackgroundTransparency = 0}):Play()
 
 	task.delay(d, function()
-		TS:Create(box, TweenInfo.new(0.2), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
-		task.wait(0.2)
-		box:Destroy()
+		TS:Create(toast, TweenInfo.new(0.3), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
+		task.wait(0.3)
+		toast:Destroy()
 	end)
 end
 
-local tooltip = Instance.new("TextLabel")
-tooltip.Name = "Tooltip"
-tooltip.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-tooltip.BackgroundTransparency = 0.2
-tooltip.TextColor3 = Color3.fromRGB(255, 255, 255)
-tooltip.Font = theme.font
-tooltip.TextSize = 12
-tooltip.Visible = false
-tooltip.ZIndex = 100
-tooltip.AutomaticSize = Enum.AutomaticSize.X
-tooltip.Size = UDim2.new(0, 0, 0, 22)
-tooltip.Parent = gui
+function MeGui:CreateButton(props)
+	props = props or {}
+	local parent = props.Parent or objects
 
-local tip_pad = Instance.new("UIPadding")
-tip_pad.PaddingLeft = UDim.new(0, 6)
-tip_pad.PaddingRight = UDim.new(0, 6)
-tip_pad.Parent = tooltip
+	local btn = Instance.new("TextButton")
+	btn.TextWrapped = true
+	btn.BorderSizePixel = 0
+	btn.TextSize = 15
+	btn.TextScaled = true
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.BackgroundColor3 = Color3.fromRGB(34, 67, 100)
+	btn.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	btn.Size = UDim2.new(0.14, 0, 0.13158, 0)
+	btn.Text = props.Text or "Button"
+	btn.Name = "Button"
+	btn.AutoButtonColor = false
+	btn.Parent = parent
 
-local function addTip(obj, text)
-	obj.MouseEnter:Connect(function()
-		if text and text ~= "" then
-			tooltip.Text = text
-			tooltip.Visible = true
-		end
-	end)
-	obj.MouseLeave:Connect(function()
-		tooltip.Visible = false
-	end)
-	UIS.InputChanged:Connect(function(input)
-		if tooltip.Visible and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			tooltip.Position = UDim2.new(0, input.Position.X + 15, 0, input.Position.Y + 15)
-		end
-	end)
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.06, 0)
+	corner.Parent = btn
+
+	local constraint = Instance.new("UITextSizeConstraint")
+	constraint.MaxTextSize = 15
+	constraint.Parent = btn
+
+	btn.MouseEnter:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(54, 87, 120) end)
+	btn.MouseLeave:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(34, 67, 100) end)
+	btn.MouseButton1Click:Connect(function() if props.Callback then props.Callback() end end)
+	return btn
 end
 
-function MeGui.CreateWindow(title)
-	local frame = Instance.new("Frame")
-	frame.Name = title or "Window"
-	frame.Size = UDim2.new(0, 500, 0, 300)
-	frame.Position = UDim2.new(0.5, -250, 0.5, -150)
-	frame.BackgroundColor3 = theme.bg
-	frame.BorderSizePixel = 0
-	frame.Parent = gui
+function MeGui:CreateCheckbox(props)
+	props = props or {}
+	local parent = props.Parent or objects
 
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(201, 201, 201)
-	stroke.Thickness = 2
-	stroke.Transparency = 0.85
-	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Parent = frame
+	local box = Instance.new("TextButton")
+	box.TextWrapped = true
+	box.BorderSizePixel = 0
+	box.TextSize = 15
+	box.TextScaled = true
+	box.TextColor3 = Color3.fromRGB(255, 255, 255)
+	box.BackgroundColor3 = Color3.fromRGB(34, 67, 100)
+	box.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	box.Size = UDim2.new(0.05, 0, 0.13158, 0)
+	box.Text = ""
+	box.Name = "CheckBox"
+	box.Position = UDim2.new(0.15, 0, 0, 0)
+	box.AutoButtonColor = false
+	box.Parent = parent
+	
+	box:SetAttribute("Checked", props.Checked == true)
 
-	local topbar = Instance.new("Frame")
-	topbar.Name = "Topbar"
-	topbar.Size = UDim2.new(1, 0, 0, 30)
-	topbar.BackgroundColor3 = theme.top
-	topbar.BorderSizePixel = 0
-	topbar.Parent = frame
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.06, 0)
+	corner.Parent = box
 
-	local title_lbl = Instance.new("TextLabel")
-	title_lbl.Size = UDim2.new(1, -80, 1, 0)
-	title_lbl.Position = UDim2.new(0, 15, 0, 0)
-	title_lbl.BackgroundTransparency = 1
-	title_lbl.Text = title or "MeGui"
-	title_lbl.TextColor3 = theme.txt
-	title_lbl.Font = theme.font
-	title_lbl.TextSize = 14
-	title_lbl.TextXAlignment = Enum.TextXAlignment.Left
-	title_lbl.Parent = topbar
+	local constraint = Instance.new("UITextSizeConstraint")
+	constraint.MaxTextSize = 15
+	constraint.Parent = box
 
-	local close_btn = Instance.new("TextButton")
-	close_btn.Size = UDim2.new(0, 30, 0, 30)
-	close_btn.Position = UDim2.new(1, -35, 0, 0)
-	close_btn.BackgroundTransparency = 1
-	close_btn.Text = "X"
-	close_btn.TextColor3 = Color3.fromRGB(255, 100, 100)
-	close_btn.Font = theme.font
-	close_btn.TextSize = 14
-	close_btn.Parent = topbar
+	local icon = Instance.new("ImageLabel")
+	icon.BorderSizePixel = 0
+	icon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	icon.Size = UDim2.new(0.8, 0, 0.8, 0)
+	icon.Position = UDim2.new(0.08, 0, 0.08, 0)
+	icon.BackgroundTransparency = 1
+	icon.Name = "Icon"
+	icon.Parent = box
 
-	local min_btn = Instance.new("TextButton")
-	min_btn.Size = UDim2.new(0, 30, 0, 30)
-	min_btn.Position = UDim2.new(1, -65, 0, 0)
-	min_btn.BackgroundTransparency = 1
-	min_btn.Text = "-"
-	min_btn.TextColor3 = theme.txt
-	min_btn.Font = theme.font
-	min_btn.TextSize = 14
-	min_btn.Parent = topbar
+	local checked = box:GetAttribute("Checked")
+	icon.Image = checked and "rbxassetid://117985790478363" or ""
 
-	local tabs_bar = Instance.new("Frame")
-	tabs_bar.Name = "Tabs"
-	tabs_bar.Size = UDim2.new(1, 0, 0, 30)
-	tabs_bar.Position = UDim2.new(0, 0, 0, 30)
-	tabs_bar.BackgroundTransparency = 1
-	tabs_bar.Parent = frame
+	box.MouseButton1Click:Connect(function()
+		checked = not box:GetAttribute("Checked")
+		box:SetAttribute("Checked", checked)
+		icon.Image = checked and "rbxassetid://117985790478363" or ""
+		if props.Callback then props.Callback(checked) end
+	end)
+	return box
+end
 
-	local tabs_layout = Instance.new("UIListLayout")
-	tabs_layout.FillDirection = Enum.FillDirection.Horizontal
-	tabs_layout.Padding = UDim.new(0, 5)
-	tabs_layout.Parent = tabs_bar
+function MeGui:CreateSlider(props)
+	props = props or {}
+	local parent = props.Parent or objects
 
-	local pages = Instance.new("Frame")
-	pages.Name = "Pages"
-	pages.Size = UDim2.new(1, 0, 1, -60)
-	pages.Position = UDim2.new(0, 0, 0, 60)
-	pages.BackgroundTransparency = 1
-	pages.Parent = frame
+	local bar = Instance.new("Frame")
+	bar.BorderSizePixel = 0
+	bar.BackgroundColor3 = Color3.fromRGB(34, 67, 100)
+	bar.Size = UDim2.new(0.18, 0, 0.02632, 0)
+	bar.Position = UDim2.new(0, 0, 0.47368, 0)
+	bar.Name = "Slider"
+	bar.Parent = parent
 
-	local grip = Instance.new("TextButton")
-	grip.Size = UDim2.new(0, 15, 0, 15)
-	grip.Position = UDim2.new(1, -15, 1, -15)
-	grip.BackgroundColor3 = theme.el_hover
-	grip.Text = ""
-	grip.Parent = frame
+	local knob = Instance.new("TextButton")
+	knob.BorderSizePixel = 0
+	knob.TextSize = 14
+	knob.TextColor3 = Color3.fromRGB(0, 0, 0)
+	knob.BackgroundColor3 = Color3.fromRGB(54, 87, 120)
+	knob.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	knob.Size = UDim2.new(0.05556, 0, 3, 0)
+	knob.Text = ""
+	knob.Name = "Drag"
+	knob.Position = UDim2.new(0.46667, 0, -1, 0)
+	knob.AutoButtonColor = false
+	knob.Parent = bar
 
-	local grip_c = Instance.new("UICorner")
-	grip_c.CornerRadius = UDim.new(1, 0)
-	grip_c.Parent = grip
+	local knobCorner = Instance.new("UICorner")
+	knobCorner.CornerRadius = UDim.new(1, 0)
+	knobCorner.Parent = knob
 
-	local dragging, drag_start, start_pos
-	local resizing, res_start, res_size
-	local dock_mode, saved_size, saved_pos
-	local expanded = true
-	local old_size = frame.Size
-	local win = { Tabs = {} }
+	local barCorner = Instance.new("UICorner")
+	barCorner.CornerRadius = UDim.new(1, 0)
+	barCorner.Parent = bar
 
-	local preview = Instance.new("Frame")
-	preview.BackgroundColor3 = Color3.new(1, 1, 1)
-	preview.BackgroundTransparency = 0.8
-	preview.BorderSizePixel = 0
-	preview.Visible = false
-	preview.ZIndex = 10
-	preview.Parent = gui
+	local min = props.Min or 0
+	local max = props.Max or 100
+	local val = math.clamp(props.Value or min, min, max)
+	local drag = false
 
-	local function checkDock(x, y)
-		local s = workspace.CurrentCamera.ViewportSize
-		if x < s.X * 0.08 then return "left"
-		elseif x > s.X * 0.92 then return "right"
-		elseif y < s.Y * 0.04 then return "top" end
-		return nil
+	local function update(alpha)
+		knob.Position = UDim2.new(alpha, -alpha * knob.Size.X.Offset, -1, 0)
+		val = math.floor(min + (max - min) * alpha)
+		if props.Callback then props.Callback(val) end
 	end
 
-	topbar.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			local px, py = input.Position.X, input.Position.Y
-			if (px >= close_btn.AbsolutePosition.X and px <= close_btn.AbsolutePosition.X + close_btn.AbsoluteSize.X and py >= close_btn.AbsolutePosition.Y and py <= close_btn.AbsolutePosition.Y + close_btn.AbsoluteSize.Y) or
-			   (px >= min_btn.AbsolutePosition.X and px <= min_btn.AbsolutePosition.X + min_btn.AbsoluteSize.X and py >= min_btn.AbsolutePosition.Y and py <= min_btn.AbsolutePosition.Y + min_btn.AbsoluteSize.Y) then
-				return
-			end
+	update((val - min) / (max - min))
 
-			if dock_mode then
-				if saved_size then frame.Size = saved_size end
-				if saved_pos then frame.Position = saved_pos end
-				saved_size = nil
-				saved_pos = nil
-				dock_mode = nil
-			end
-
-			dragging = true
-			drag_start = input.Position
-			start_pos = frame.Position
-		end
+	knob.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then drag = true end
 	end)
 
 	UIS.InputChanged:Connect(function(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			local delta = input.Position - drag_start
-			frame.Position = UDim2.new(start_pos.X.Scale, start_pos.X.Offset + delta.X, start_pos.Y.Scale, start_pos.Y.Offset + delta.Y)
-
-			local mode = checkDock(input.Position.X, input.Position.Y)
-			if mode == "left" then
-				preview.Position = UDim2.new(0, 0, 0, 0)
-				preview.Size = UDim2.new(0.5, 0, 1, 0)
-				preview.Visible = true
-			elseif mode == "right" then
-				preview.Position = UDim2.new(0.5, 0, 0, 0)
-				preview.Size = UDim2.new(0.5, 0, 1, 0)
-				preview.Visible = true
-			elseif mode == "top" then
-				preview.Position = UDim2.new(0, 0, 0, 0)
-				preview.Size = UDim2.new(1, 0, 1, 0)
-				preview.Visible = true
-			else
-				preview.Visible = false
-			end
-		elseif resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			local delta = input.Position - res_start
-			frame.Size = UDim2.new(0, math.max(250, res_size.X.Offset + delta.X), 0, math.max(150, res_size.Y.Offset + delta.Y))
+		if drag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local a = math.clamp((input.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+			update(a)
 		end
 	end)
 
 	UIS.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			if dragging then
-				dragging = false
-				preview.Visible = false
-				local mode = checkDock(input.Position.X, input.Position.Y)
-				if mode then
-					if not saved_size then
-						saved_size = frame.Size
-						saved_pos = UDim2.new(0, frame.AbsolutePosition.X, 0, frame.AbsolutePosition.Y)
-					end
-					if mode == "left" then
-						frame.Position = UDim2.new(0, 0, 0, 0)
-						frame.Size = UDim2.new(0.5, 0, 1, 0)
-					elseif mode == "right" then
-						frame.Position = UDim2.new(0.5, 0, 0, 0)
-						frame.Size = UDim2.new(0.5, 0, 1, 0)
-					elseif mode == "top" then
-						frame.Position = UDim2.new(0, 0, 0, 0)
-						frame.Size = UDim2.new(1, 0, 1, 0)
-					end
-					dock_mode = mode
-				else
-					local s = workspace.CurrentCamera.ViewportSize
-					local size = frame.AbsoluteSize
-					local x, y = frame.Position.X.Offset, frame.Position.Y.Offset
-					if x < 20 then x = 0 elseif x + size.X > s.X - 20 then x = s.X - size.X end
-					if y < 20 then y = 0 elseif y + size.Y > s.Y - 20 then y = s.Y - size.Y end
-					frame.Position = UDim2.new(0, x, 0, y)
-				end
-			elseif resizing then
-				resizing = false
-			end
-		end
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then drag = false end
 	end)
 
-	grip.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			resizing = true
-			res_start = input.Position
-			res_size = frame.Size
-		end
+	return bar
+end
+
+function MeGui:CreateTextbox(props)
+	props = props or {}
+	local parent = props.Parent or objects
+
+	local box = Instance.new("TextBox")
+	box.BorderSizePixel = 0
+	box.TextWrapped = true
+	box.TextSize = 15
+	box.TextColor3 = Color3.fromRGB(255, 255, 255)
+	box.TextScaled = true
+	box.BackgroundColor3 = Color3.fromRGB(34, 67, 100)
+	box.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	box.ClearTextOnFocus = false
+	box.Size = UDim2.new(0.18, 0, 0.13158, 0)
+	box.Position = UDim2.new(0.02222, 0, 0.08, 0)
+	box.Text = props.Text or ""
+	box.PlaceholderText = props.Placeholder or ""
+	box.Parent = parent
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.06, 0)
+	corner.Parent = box
+
+	local constraint = Instance.new("UITextSizeConstraint")
+	constraint.MaxTextSize = 15
+	constraint.Parent = box
+
+	box.FocusLost:Connect(function()
+		if props.Callback then props.Callback(box.Text) end
 	end)
 
-	close_btn.MouseButton1Click:Connect(function()
-		frame.Visible = false
-	end)
-
-	min_btn.MouseButton1Click:Connect(function()
-		expanded = not expanded
-		tabs_bar.Visible = expanded
-		pages.Visible = expanded
-		if expanded then
-			TS:Create(frame, TweenInfo.new(0.2), {Size = old_size}):Play()
-		else
-			old_size = frame.Size
-			TS:Create(frame, TweenInfo.new(0.2), {Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, 30)}):Play()
-		end
-	end)
-
-	function win.Toggle()
-		frame.Visible = not frame.Visible
-	end
-
-	function win.Close()
-		frame.Visible = false
-	end
-
-	function win.AddTab(name)
-		local btn = Instance.new("TextButton")
-		btn.Size = UDim2.new(0, 80, 1, 0)
-		btn.BackgroundColor3 = theme.tab_off
-		btn.Text = name
-		btn.TextColor3 = theme.txt
-		btn.Font = theme.font
-		btn.TextSize = 13
-		btn.Parent = tabs_bar
-
-		local page = Instance.new("ScrollingFrame")
-		page.Size = UDim2.new(1, -20, 1, -10)
-		page.Position = UDim2.new(0, 10, 0, 5)
-		page.BackgroundTransparency = 1
-		page.BorderSizePixel = 0
-		page.ScrollBarThickness = 2
-		page.AutomaticCanvasSize = Enum.AutomaticSize.Y
-		page.CanvasSize = UDim2.new(0, 0, 0, 0)
-		page.Visible = false
-		page.Parent = pages
-
-		local layout = Instance.new("UIListLayout")
-		layout.Padding = UDim.new(0, 8)
-		layout.Parent = page
-
-		local tab = {}
-
-		btn.MouseButton1Click:Connect(function()
-			for _, t in pairs(win.Tabs) do
-				t.btn.BackgroundColor3 = theme.tab_off
-				t.page.Visible = false
-			end
-			btn.BackgroundColor3 = theme.tab_on
-			page.Visible = true
-		end)
-
-		table.insert(win.Tabs, {btn = btn, page = page})
-		if #win.Tabs == 1 then
-			btn.BackgroundColor3 = theme.tab_on
-			page.Visible = true
-		end
-
-		function tab.AddButton(text, tip, cb)
-			local b = Instance.new("TextButton")
-			b.Size = UDim2.new(1, 0, 0, 30)
-			b.BackgroundColor3 = theme.el
-			b.Text = text
-			b.TextColor3 = theme.txt
-			b.Font = theme.font
-			b.TextSize = 14
-			b.BorderSizePixel = 0
-			b.Parent = page
-
-			local c = Instance.new("UICorner")
-			c.CornerRadius = UDim.new(0, 4)
-			c.Parent = b
-
-			b.MouseEnter:Connect(function() b.BackgroundColor3 = theme.el_hover end)
-			b.MouseLeave:Connect(function() b.BackgroundColor3 = theme.el end)
-			b.MouseButton1Click:Connect(cb)
-			if tip then addTip(b, tip) end
-			return b
-		end
-
-		function tab.AddCheckbox(text, def, tip, cb)
-			local f = Instance.new("TextButton")
-			f.Size = UDim2.new(1, 0, 0, 30)
-			f.BackgroundTransparency = 1
-			f.Text = ""
-			f.Parent = page
-
-			local box = Instance.new("Frame")
-			box.Size = UDim2.new(0, 18, 0, 18)
-			box.Position = UDim2.new(0, 5, 0.5, -9)
-			box.BackgroundColor3 = theme.el
-			box.Parent = f
-
-			local c = Instance.new("UICorner")
-			c.CornerRadius = UDim.new(0, 4)
-			c.Parent = box
-
-			local icon = Instance.new("ImageLabel")
-			icon.Size = UDim2.new(0.8, 0, 0.8, 0)
-			icon.Position = UDim2.new(0.1, 0, 0.1, 0)
-			icon.BackgroundTransparency = 1
-			icon.Image = def and "rbxassetid://117985790478363" or ""
-			icon.Parent = box
-
-			local lbl = Instance.new("TextLabel")
-			lbl.Size = UDim2.new(1, -40, 1, 0)
-			lbl.Position = UDim2.new(0, 35, 0, 0)
-			lbl.BackgroundTransparency = 1
-			lbl.Text = text
-			lbl.TextColor3 = theme.txt
-			lbl.Font = theme.font
-			lbl.TextSize = 14
-			lbl.TextXAlignment = Enum.TextXAlignment.Left
-			lbl.Parent = f
-
-			local on = def
-			f.MouseButton1Click:Connect(function()
-				on = not on
-				icon.Image = on and "rbxassetid://117985790478363" or ""
-				cb(on)
-			end)
-			if tip then addTip(f, tip) end
-			return f
-		end
-
-		function tab.AddSlider(text, min, max, def, tip, cb)
-			local f = Instance.new("Frame")
-			f.Size = UDim2.new(1, 0, 0, 40)
-			f.BackgroundTransparency = 1
-			f.Parent = page
-
-			local lbl = Instance.new("TextLabel")
-			lbl.Size = UDim2.new(1, 0, 0, 20)
-			lbl.BackgroundTransparency = 1
-			lbl.Text = text .. " (" .. def .. ")"
-			lbl.TextColor3 = theme.txt
-			lbl.Font = theme.font
-			lbl.TextSize = 14
-			lbl.TextXAlignment = Enum.TextXAlignment.Left
-			lbl.Parent = f
-
-			local bar = Instance.new("Frame")
-			bar.Size = UDim2.new(1, -10, 0, 6)
-			bar.Position = UDim2.new(0, 5, 0, 30)
-			bar.BackgroundColor3 = theme.el
-			bar.Parent = f
-
-			local c = Instance.new("UICorner")
-			c.CornerRadius = UDim.new(1, 0)
-			c.Parent = bar
-
-			local knob = Instance.new("TextButton")
-			knob.Size = UDim2.new(0, 14, 3, 0)
-			knob.BackgroundColor3 = theme.el_hover
-			knob.Text = ""
-			knob.AnchorPoint = Vector2.new(0.5, 0)
-			knob.Parent = bar
-
-			local c2 = Instance.new("UICorner")
-			c2.CornerRadius = UDim.new(1, 0)
-			c2.Parent = knob
-
-			local val = math.clamp(def, min, max)
-			local drag = false
-
-			local function update(x)
-				local a = math.clamp((x - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
-				val = math.floor(min + (max - min) * a)
-				knob.Position = UDim2.new(a, 0, -1, 0)
-				lbl.Text = text .. " (" .. val .. ")"
-				cb(val)
-			end
-
-			knob.InputBegan:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-					drag = true
-				end
-			end)
-
-			UIS.InputChanged:Connect(function(input)
-				if drag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-					update(input.Position.X)
-				end
-			end)
-
-			UIS.InputEnded:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-					drag = false
-				end
-			end)
-
-			update(bar.AbsolutePosition.X + (val - min) / (max - min) * bar.AbsoluteSize.X)
-			if tip then addTip(f, tip) end
-			return f
-		end
-
-		function tab.AddTextbox(text, placeholder, def, tip, cb)
-			local f = Instance.new("Frame")
-			f.Size = UDim2.new(1, 0, 0, 40)
-			f.BackgroundTransparency = 1
-			f.Parent = page
-
-			local lbl = Instance.new("TextLabel")
-			lbl.Size = UDim2.new(1, 0, 0, 20)
-			lbl.BackgroundTransparency = 1
-			lbl.Text = text
-			lbl.TextColor3 = theme.txt
-			lbl.Font = theme.font
-			lbl.TextSize = 14
-			lbl.TextXAlignment = Enum.TextXAlignment.Left
-			lbl.Parent = f
-
-			local box = Instance.new("TextBox")
-			box.Size = UDim2.new(1, 0, 0, 28)
-			box.Position = UDim2.new(0, 0, 0, 20)
-			box.BackgroundColor3 = theme.el
-			box.Text = def or ""
-			box.PlaceholderText = placeholder or ""
-			box.TextColor3 = theme.txt
-			box.Font = theme.font
-			box.TextSize = 14
-			box.BorderSizePixel = 0
-			box.ClearTextOnFocus = false
-			box.Parent = f
-
-			local c = Instance.new("UICorner")
-			c.CornerRadius = UDim.new(0, 4)
-			c.Parent = box
-
-			box.FocusLost:Connect(function()
-				cb(box.Text)
-			end)
-			if tip then addTip(box, tip) end
-			return f
-		end
-
-		function tab.AddDropdown(text, options, def, tip, cb)
-			local f = Instance.new("Frame")
-			f.Size = UDim2.new(1, 0, 0, 30)
-			f.BackgroundTransparency = 1
-			f.Parent = page
-
-			local btn = Instance.new("TextButton")
-			btn.Size = UDim2.new(1, 0, 1, 0)
-			btn.BackgroundColor3 = theme.el
-			btn.Text = text .. " - " .. (def or options[1])
-			btn.TextColor3 = theme.txt
-			btn.Font = theme.font
-			btn.TextSize = 14
-			btn.BorderSizePixel = 0
-			btn.Parent = f
-
-			local c = Instance.new("UICorner")
-			c.CornerRadius = UDim.new(0, 4)
-			c.Parent = btn
-
-			local open = false
-			local list = Instance.new("Frame")
-			list.Size = UDim2.new(1, 0, 0, #options * 25)
-			list.Position = UDim2.new(0, 0, 1, 5)
-			list.BackgroundColor3 = theme.bg
-			list.BorderSizePixel = 0
-			list.Visible = false
-			list.ZIndex = 10
-			list.Parent = btn
-
-			local c2 = Instance.new("UICorner")
-			c2.CornerRadius = UDim.new(0, 4)
-			c2.Parent = list
-
-			for i, opt in ipairs(options) do
-				local opt_btn = Instance.new("TextButton")
-				opt_btn.Size = UDim2.new(1, 0, 0, 25)
-				opt_btn.Position = UDim2.new(0, 0, 0, (i-1)*25)
-				opt_btn.BackgroundTransparency = 1
-				opt_btn.Text = opt
-				opt_btn.TextColor3 = theme.txt
-				opt_btn.Font = theme.font
-				opt_btn.TextSize = 13
-				opt_btn.ZIndex = 11
-				opt_btn.Parent = list
-
-				opt_btn.MouseButton1Click:Connect(function()
-					btn.Text = text .. " - " .. opt
-					list.Visible = false
-					open = false
-					cb(opt)
-				end)
-			end
-
-			btn.MouseButton1Click:Connect(function()
-				open = not open
-				list.Visible = open
-			end)
-			if tip then addTip(btn, tip) end
-			return f
-		end
-
-		function tab.AddColorPicker(text, def, tip, cb)
-			local f = Instance.new("TextButton")
-			f.Size = UDim2.new(1, 0, 0, 30)
-			f.BackgroundTransparency = 1
-			f.Text = ""
-			f.Parent = page
-
-			local lbl = Instance.new("TextLabel")
-			lbl.Size = UDim2.new(1, -40, 1, 0)
-			lbl.Position = UDim2.new(0, 35, 0, 0)
-			lbl.BackgroundTransparency = 1
-			lbl.Text = text
-			lbl.TextColor3 = theme.txt
-			lbl.Font = theme.font
-			lbl.TextSize = 14
-			lbl.TextXAlignment = Enum.TextXAlignment.Left
-			lbl.Parent = f
-
-			local box = Instance.new("Frame")
-			box.Size = UDim2.new(0, 18, 0, 18)
-			box.Position = UDim2.new(0, 5, 0.5, -9)
-			box.BackgroundColor3 = def or Color3.new(1, 1, 1)
-			box.Parent = f
-
-			local c = Instance.new("UICorner")
-			c.CornerRadius = UDim.new(0, 4)
-			c.Parent = box
-
-			f.MouseButton1Click:Connect(function()
-				local col = Color3.fromHSV(math.random(), 0.8, 0.9)
-				box.BackgroundColor3 = col
-				cb(col)
-			end)
-			if tip then addTip(f, tip) end
-			return f
-		end
-
-		function tab.AddKeybind(text, def, tip, cb)
-			local f = Instance.new("TextButton")
-			f.Size = UDim2.new(1, 0, 0, 30)
-			f.BackgroundColor3 = theme.el
-			f.BorderSizePixel = 0
-			f.Text = ""
-			f.Parent = page
-
-			local c = Instance.new("UICorner")
-			c.CornerRadius = UDim.new(0, 4)
-			c.Parent = f
-
-			local lbl = Instance.new("TextLabel")
-			lbl.Size = UDim2.new(1, -80, 1, 0)
-			lbl.Position = UDim2.new(0, 10, 0, 0)
-			lbl.BackgroundTransparency = 1
-			lbl.Text = text
-			lbl.TextColor3 = theme.txt
-			lbl.Font = theme.font
-			lbl.TextSize = 14
-			lbl.TextXAlignment = Enum.TextXAlignment.Left
-			lbl.Parent = f
-
-			local btn_lbl = Instance.new("TextLabel")
-			btn_lbl.Size = UDim2.new(0, 60, 1, 0)
-			btn_lbl.Position = UDim2.new(1, -65, 0, 0)
-			btn_lbl.BackgroundTransparency = 1
-			btn_lbl.Text = def and def.Name or "None"
-			btn_lbl.TextColor3 = Color3.fromRGB(200, 200, 200)
-			btn_lbl.Font = theme.font
-			btn_lbl.TextSize = 13
-			btn_lbl.Parent = f
-
-			local listening = false
-			f.MouseButton1Click:Connect(function()
-				listening = true
-				btn_lbl.Text = "Press..."
-			end)
-
-			UIS.InputBegan:Connect(function(input, gp)
-				if listening and input.UserInputType == Enum.UserInputType.Keyboard then
-					listening = false
-					btn_lbl.Text = input.KeyCode.Name
-					cb(input.KeyCode)
-				end
-			end)
-			if tip then addTip(f, tip) end
-			return f
-		end
-
-		function tab.AddLabel(text, tip)
-			local lbl = Instance.new("TextLabel")
-			lbl.Size = UDim2.new(1, 0, 0, 20)
-			lbl.BackgroundTransparency = 1
-			lbl.Text = text
-			lbl.TextColor3 = Color3.fromRGB(200, 200, 200)
-			lbl.Font = theme.font
-			lbl.TextSize = 13
-			lbl.TextXAlignment = Enum.TextXAlignment.Left
-			lbl.Parent = page
-			if tip then addTip(lbl, tip) end
-			return lbl
-		end
-
-		function tab.AddDivider()
-			local div = Instance.new("Frame")
-			div.Size = UDim2.new(1, 0, 0, 2)
-			div.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-			div.BorderSizePixel = 0
-			div.Parent = page
-			return div
-		end
-
-		return tab
-	end
-
-	return win
+	return box
 end
 
 return MeGui
