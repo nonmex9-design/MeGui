@@ -756,6 +756,7 @@ task.spawn(C_22);
 local function C_23()
 local script = G2L["23"];
 	local tabs = script.Parent.UI.Tabs
+	local frames = script.Parent.UI.Frames
 	
 	local active = Color3.fromRGB(34, 67, 100)
 	local idle = Color3.fromRGB(14, 47, 80)
@@ -767,6 +768,17 @@ local script = G2L["23"];
 			end
 		end
 		tab.BackgroundColor3 = active
+	
+		for _, frame in ipairs(frames:GetChildren()) do
+			if frame:IsA("Frame") then
+				frame.Visible = false
+			end
+		end
+	
+		local target = frames:FindFirstChild(tab.Name)
+		if target then
+			target.Visible = true
+		end
 	end
 	
 	for _, tab in ipairs(tabs:GetChildren()) do
@@ -784,6 +796,8 @@ task.spawn(C_23);
 local function C_24()
 local script = G2L["24"];
 	local objects = script.Parent.UI.Frames.Objects
+	objects.Visible = true
+	
 	local iconId = "rbxassetid://117985790478363"
 	
 	local function setupCheckbox(box)
