@@ -936,10 +936,19 @@ local script = G2L["2a"];
 	end
 	
 	topbar.InputBegan:Connect(function(input)
-		if input.Target and input.Target:IsA("GuiButton") then
-			return
-		end
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			local px, py = input.Position.X, input.Position.Y
+			local toggle = topbar:FindFirstChild("Toggle")
+			local close = topbar:FindFirstChild("Close")
+	
+			local function inBounds(obj)
+				return obj and px >= obj.AbsolutePosition.X and px <= obj.AbsolutePosition.X + obj.AbsoluteSize.X and py >= obj.AbsolutePosition.Y and py <= obj.AbsolutePosition.Y + obj.AbsoluteSize.Y
+			end
+	
+			if inBounds(toggle) or inBounds(close) then
+				return
+			end
+	
 			if docked then
 				if savedSize then
 					ui.Size = savedSize
